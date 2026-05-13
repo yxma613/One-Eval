@@ -1058,9 +1058,8 @@ export const ChatPanel = ({ messages, status, onSendMessage, onConfirm, onStop, 
     };
 
     return (
-        <motion.div 
-            animate={{ width: isCollapsed ? 60 : 400 }}
-            className="h-full flex flex-col bg-white/60 backdrop-blur-xl border-l border-white/40 shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.1)] relative overflow-hidden transition-all duration-300"
+        <div
+            className="h-full w-full min-w-0 flex flex-col bg-white/60 backdrop-blur-xl border-l border-white/40 shadow-[-10px_0_30px_-10px_rgba(0,0,0,0.1)] relative overflow-hidden"
         >
             {/* Collapse Toggle */}
             <Button 
@@ -1195,7 +1194,7 @@ export const ChatPanel = ({ messages, status, onSendMessage, onConfirm, onStop, 
                     </div>
                 </>
             )}
-        </motion.div>
+        </div>
     );
 };
 

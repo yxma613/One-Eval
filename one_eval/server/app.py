@@ -1611,25 +1611,30 @@ async def delete_history(thread_id: str):
 
     deleted_rows = 0
     try:
-        async with get_checkpointer(DB_PATH, mode="run") as cp:
-            async with cp.conn.execute("SELECT name FROM sqlite_master WHERE type='table'") as cursor:
-                tables = await cursor.fetchall()
+        if DB_PATH.exists():
+            async with get_checkpointer(DB_PATH, mode="run") as cp:
+                async with cp.conn.execute("SELECT name FROM sqlite_master WHERE type='table'") as cursor:
+                    tables = await cursor.fetchall()
 
-            for (table_name,) in tables:
-                if not isinstance(table_name, str) or table_name.startswith("sqlite_"):
-                    continue
-                async with cp.conn.execute(f'PRAGMA table_info("{table_name}")') as cinfo:
-                    cols = await cinfo.fetchall()
-                has_thread_id = any(len(col) > 1 and col[1] == "thread_id" for col in cols)
-                if not has_thread_id:
-                    continue
-                cur = await cp.conn.execute(
-                    f'DELETE FROM "{table_name}" WHERE thread_id = ?',
-                    (tid,),
-                )
-                if isinstance(cur.rowcount, int) and cur.rowcount > 0:
-                    deleted_rows += cur.rowcount
-            await cp.conn.commit()
+                for (table_name,) in tables:
+                    if not isinstance(table_name, str) or table_name.startswith("sqlite_"):
+                        continue
+                    async with cp.conn.execute(f'PRAGMA table_info("{table_name}")') as cinfo:
+                        cols = await cinfo.fetchall()
+                    has_thread_id = any(len(col) > 1 and col[1] == "thread_id" for col in cols)
+                    if not has_thread_id:
+                        continue
+                    async with cp.conn.execute(
+                        f'SELECT COUNT(*) FROM "{table_name}" WHERE thread_id = ?',
+                        (tid,),
+                    ) as cnt_cur:
+                        cnt_row = await cnt_cur.fetchone()
+                        deleted_rows += int(cnt_row[0] or 0) if cnt_row else 0
+                    await cp.conn.execute(
+                        f'DELETE FROM "{table_name}" WHERE thread_id = ?',
+                        (tid,),
+                    )
+                await cp.conn.commit()
     except Exception as e:
         log.error(f"Failed to delete workflow history for {tid}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="failed to delete history")

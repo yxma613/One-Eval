@@ -2478,8 +2478,7 @@ export const Eval = () => {
            />
        </div>
 
-       {/* --- Right Sidebar (Chat) --- */}
-       <div className="h-full z-40 shadow-2xl relative flex-shrink-0 flex flex-col bg-white border-l border-slate-200 transition-all duration-300" style={{ width: isChatCollapsed ? '0px' : '400px' }}>
+       <div className="h-full z-40 shadow-2xl relative flex-shrink-0 flex flex-col bg-white border-l border-slate-200" style={{ width: isChatCollapsed ? '60px' : '400px' }}>
            <div className="flex-1 overflow-hidden">
                <ChatPanel 
                     messages={messages} 
